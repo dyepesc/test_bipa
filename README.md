@@ -53,6 +53,31 @@ The **Request sent** tab shows the exact body with the image data truncated.
   which only accept the default value.
 - **Image detail** (`low` / `high`) is omitted on `auto`.
 
+## Deploying (Render)
+
+Never run `npm run dev` on a host. Vite's dev server binds to localhost, so Render's
+port scan finds nothing and the deploy times out; it also refuses requests from an
+unknown hostname. Build the app and serve it instead:
+
+| Setting        | Value                                   |
+| -------------- | --------------------------------------- |
+| Build Command  | `npm ci --include=dev && npm run build` |
+| Start Command  | `npm start`                             |
+| Health Check   | `/healthz`                              |
+
+`--include=dev` is required because Render sets `NODE_ENV=production`, and npm then
+skips `devDependencies` — where vite and typescript live. Without it the build dies
+with `vite: not found`. [render.yaml](render.yaml) sets all of this already.
+
+`npm start` runs [server.mjs](server.mjs): it serves `dist/` and keeps the `/openai`
+proxy, so the deployed app behaves exactly like the dev one. It binds `0.0.0.0` and
+honours the `PORT` that the host injects. The proxy target is hard-coded to
+api.openai.com, so it cannot be abused as an open relay the way `serve.js` could.
+
+Anyone who opens the deployed page types **their own** key; nothing is stored on the
+server. Do not bake a shared key into the deployment — the page runs in the visitor's
+browser, so any key it holds is visible to them.
+
 ## The API key
 
 The key lives in React state and is sent only to the API. "Remember the key in this
@@ -65,4 +90,6 @@ not something to switch on elsewhere. Unchecking it clears the stored copy.
 - [src/openai.ts](src/openai.ts) — body building, response parsing, `GET /v1/models`.
 - [vite.config.ts](vite.config.ts) — port and proxy.
 - [scripts/stop.mjs](scripts/stop.mjs) — `npm run stop`, and the pre-step of `npm run dev`.
+- [server.mjs](server.mjs) — production server: static `dist/` + the same `/openai` proxy.
+- [render.yaml](render.yaml) — deploy settings.
 - `image-report-api-tester.html` / `serve.js` — the original tester, kept for reference.

@@ -7,8 +7,9 @@
     "dev": "node scripts/stop.mjs --quiet && vite",
     "stop": "node scripts/stop.mjs",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "node scripts/stop.mjs --quiet && vite preview"
+    "start": "node server.mjs",
+    "preview": "node scripts/stop.mjs --quiet && vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -30,5 +31,8 @@
   },
   "config": {
     "port": "5180"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

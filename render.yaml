@@ -1,0 +1,19 @@
+# Render blueprint. In the dashboard the same three settings are:
+#   Build Command:  npm ci --include=dev && npm run build
+#   Start Command:  npm start
+#   Health Check:   /healthz
+#
+# --include=dev matters: Render sets NODE_ENV=production, and npm then skips
+# devDependencies — which is where vite and typescript live, so the build fails
+# with "vite: not found" without it.
+services:
+  - type: web
+    name: test-gpt
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
